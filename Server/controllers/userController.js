@@ -125,7 +125,7 @@ export const userList = async (req, res, next) => {
         if (!userList) {
             res.status(401).json({ success: false, message: "No users yet" });
         }
-         res.json({ success: true, message: "user autherized" });
+         res.json({ success: true, message: "user autherized",data: userList });
     } catch (error) {
         console.log(error);
         res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" });
@@ -142,10 +142,11 @@ export const userDelete = async (req, res, next) => {
         
         id = req.params.id;
         const user = await User.findById(id);
-        await user.remove();
+        
         const deletedUser = new
             DeletedUser(user);
         await deletedUser.save();
+        await user.remove();
 
         res.json({ success: true, message: "deleted successfully" });
 
