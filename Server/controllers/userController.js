@@ -1,6 +1,7 @@
 import User from "../models/userModel.js";
 import bcrypt from "bcrypt";
 import { generateToken } from "../utils/Token.js";
+import mongoose from "mongoose";
 
 export const userSignup = async (req, res, next) => {
     try {
@@ -80,6 +81,28 @@ export const userProfile = async (req, res, next) => {
     }
 };
 
+
+export const updateProfile = async (req, res, next) => {
+    try {
+        const { user } = req;
+        console.log(user, "=user");
+
+        const updatedUser = await User.findByIdAndUpdate(
+            { _id: user.id },
+            { email, password },
+            {
+                new: true
+            }
+        );
+
+        res.json({ success: true, message: "updated user", data: updatedUser });
+    } catch (error) {
+        console.log(error);
+        res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" });
+    }
+};
+
+
 export const checkUser = async (req, res, next) => {
     try {
         const { user } = req;
@@ -88,6 +111,44 @@ export const checkUser = async (req, res, next) => {
         }
 
         res.json({ success: true, message: "user autherized" });
+    } catch (error) {
+        console.log(error);
+        res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" });
+    }
+};
+
+
+
+export const userList = async (req, res, next) => {
+    try {
+        const userList = await User.find().select('-password')
+        if (!userList) {
+            res.status(401).json({ success: false, message: "No users yet" });
+        }
+         res.json({ success: true, message: "user autherized" });
+    } catch (error) {
+        console.log(error);
+        res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" });
+    }
+};
+
+
+export const userDelete = async (req, res, next) => {
+    try {
+        const DeletedUser = mongoose.model('DeletedUser', {
+            name: String,
+            email: String
+        });
+        
+        id = req.params.id;
+        const user = await User.findById(id);
+        await user.remove();
+        const deletedUser = new
+            DeletedUser(user);
+        await deletedUser.save();
+
+        res.json({ success: true, message: "deleted successfully" });
+
     } catch (error) {
         console.log(error);
         res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" });
