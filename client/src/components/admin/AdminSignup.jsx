@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 
 const schema = yup.object({
@@ -63,6 +64,7 @@ export default function Signup() {
             <input
                 {...register("password")}
                 placeholder="password"
+                autoComplete="new-password"
                 type="password"
                 className="block w-full rounded-lg border border-gray-300 bg-gray-50 px-2 py-1.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
             />
@@ -70,6 +72,7 @@ export default function Signup() {
             <input
                 {...register("confirmPassword")}
                 placeholder="confirm password"
+                autoComplete="new-password"
                 type="password"
                 className="block w-full rounded-lg border-4 border-gray-300 bg-gray-50 px-2 py-1.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
             />

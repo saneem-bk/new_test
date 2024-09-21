@@ -1,4 +1,5 @@
 import { useForm } from "react-hook-form";
+import { Link } from "react-router-dom";
 import { yupResolver } from "@hookform/resolvers/yup";
 import axios from "axios";
 import * as yup from "yup";
@@ -55,26 +56,27 @@ export default function Signup() {
 
         <form
             onSubmit={handleSubmit(onSubmit)}
-            className="flex flex-col gap-y-2 rounded-md border-4 p-6 min-w-[300px]"
+            className="container"
         >
 
             <input
                 {...register("firstName")}
                 placeholder="First name"
-                className="block w-full rounded-lg border-4 border-gray-300 bg-gray-50 px-2 py-1.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
+                className="items"
             />
             {errors.firstName && <p className="text-sm text-red-500">{errors.firstName.message}</p>}
 
             <input
                 {...register("lastName")}
                 placeholder="Last name"
-                className="block w-full rounded-lg border-4 border-gray-300 bg-gray-50 px-2 py-1.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
+                className="items"
             />
             {errors.lastName && <p className="text-sm text-red-500">{errors.lastName.message}</p>}
             
             <input
                 {...register("email")}
                 placeholder="email"
+                autoComplete="email"
                 className="block w-full rounded-lg border-4 border-gray-300 bg-gray-50 px-2 py-1.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
             />
             {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
@@ -82,6 +84,7 @@ export default function Signup() {
             <input
                 {...register("password")}
                 placeholder="password"
+                autoComplete="new-password"
                 type="password"
                 className="block w-full rounded-lg border-4 border-gray-300 bg-gray-50 px-2 py-1.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
             />
@@ -89,6 +92,7 @@ export default function Signup() {
             <input
                 {...register("confirmPassword")}
                 placeholder="confirm password"
+                autoComplete="new-password"
                 type="password"
                 className="block w-full rounded-lg border-4 border-gray-300 bg-gray-50 px-2 py-1.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
             />
