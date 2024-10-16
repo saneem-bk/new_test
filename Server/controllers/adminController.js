@@ -8,7 +8,7 @@ export const adminSignup = async (req, res, next) => {
         if (!name || !email || !password) {
             return res.status(400).json({ success: false, message: "all fields required" });
         }
-        const isAdminExist = await Admin.findOne({ email });
+        const isAdminExist = await Admin.findOne({ email: {$regex: email, $options: 'i'} });
 
         if (isAdminExist) {
             return res.status(400).json({ message: "admin already exist" });
@@ -16,8 +16,8 @@ export const adminSignup = async (req, res, next) => {
 
         const saltRounds = 10;
         const hashedPassword = bcrypt.hashSync(password, saltRounds);
-
-        const newAdmin = new Admin({ name, email, password: hashedPassword});
+        const lcEmail = email.toLowerCase();
+        const newAdmin = new Admin({ name, email: lcEmail, password: hashedPassword});
         await newAdmin.save();
 
         const token = adminToken(newAdmin.id, "admin");
@@ -37,7 +37,8 @@ export const adminLogin = async (req, res, next) => {
             return res.status(400).json({ message: "all fields are required" });
         }
 
-        const adminExist = await  Admin.findOne({ email });
+        const adminExist = await Admin.findOne({ email: {$regex: email, $options: 'i'} });
+        console.log(adminExist)
         if (!adminExist) {
             return res.status(404).json({ success: false, message: "admin does not exist" });
         }
@@ -61,6 +62,21 @@ export const  adminLogout = async (req, res, next) => {
     try {
         res.clearCookie("token");
         res.json({ message: "admin logout success", success: true });
+    } catch (error) {
+        console.log(error);
+        res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" });
+    }
+};
+
+export const checkAdmin = async (req, res, next) => {
+    try {
+        const { admin } = req;
+        const adminExist = await Admin.findById(admin.id);
+        if (!adminExist) {
+           return res.status(401).json({ success: false, message: "user not autherized" });
+        }
+
+        res.json({ success: true, message: "admin autherized" });
     } catch (error) {
         console.log(error);
         res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" });

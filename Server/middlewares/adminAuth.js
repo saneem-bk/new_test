@@ -1,18 +1,20 @@
 import jwt from "jsonwebtoken";
 
+export const adminAuth = (req, res, next) => {
 
-const adminAuth = (req, res, next) => {
     try {
         const { token } = req.cookies;
         if (!token) {
             return res.status(401).json({ success: false, message: "no token" });
         }
+        
         const tokenVerified = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
         if (!tokenVerified) {
             return res.status(401).json({ success: false, message: "admin not autherized" });
         }
 
-        console.log("tokenVerified=====", tokenVerified);
+        console.log("tokenVerified =", tokenVerified);
 
         req.admin = tokenVerified;
 
@@ -23,4 +25,3 @@ const adminAuth = (req, res, next) => {
     }
 };
 
-export default adminAuth;

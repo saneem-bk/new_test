@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 
 const schema = yup.object({
@@ -14,6 +14,10 @@ const schema = yup.object({
 
 
 export default function Signin() {
+
+    const navigate = useNavigate();
+
+
     const {
         register,
         handleSubmit,
@@ -26,14 +30,15 @@ export default function Signin() {
     const onSubmit = async (data) => {
         try {
             const res = await axios.post(
-                "http://loclhost:3000/v1/admin/signin",
+                "http://localhost:3000/api/v1/admin/login",
                 data,
                 {
                     withCredentials: true,
                 },
             );
             const success = await res.data.message;
-            
+            alert(success)
+            navigate("/admin/dashboard")
 
         } catch (error) {
             console.log(error);
@@ -44,30 +49,39 @@ export default function Signin() {
 
         <form
             onSubmit={handleSubmit(onSubmit)}
-            className="flex flex-col border-4 gap-y-2 rounded-md border p-6 min-w-[300px]"
+            className="w-full h-full flex justify-center text-slate-800 py-20"
         >
+         <div className="w-full bg-emerald-300 border border-red-600 rounded-md p-10 max-w-[500px] mx-10">
+          <h3 className="text-2xl text-red-500 font-bold underline">SignIn</h3>
+          <div className="flex flex-wrap mt-8">    
+            <label>Email :</label> 
             <input
                 {...register("email")}
                 placeholder="email"
-                className="block w-full rounded-lg border-4 border-gray-300 bg-gray-50 px-2 py-1.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
+                autoComplete="admin-email"
+                className="block w-full rounded-lg border-2 border-gray-600 bg-gray-50 px-2 py-1.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
             />
             {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
-            
-            <input
+            </div> 
+            <div className="flex flex-wrap mt-8">    
+             <label>Password :</label>
+             <input
                 {...register("password")}
                 placeholder="password"
+                autoComplete="current-password"
                 type="password"
-                className="block w-full rounded-lg border-4 border-gray-300 bg-gray-50 px-2 py-1.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-            />
-            {errors.password && <p className="text-sm text-red-500">{errors.password.message}</p>}
-            <input type="submit" className="rounded-md border-4 mt-5 bg-blue-500 py-1 text-white" />
+                className="block w-full rounded-lg border-2 border-gray-600 bg-gray-50 px-2 py-1.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
+             />
+             {errors.password && <p className="text-sm text-red-500">{errors.password.message}</p>}
+            </div>
+            <input type="submit" className="rounded-md border-3 bg-red-500 py-1 p-3  mt-5 text-white" />
             <p className="flex text-white justify-between">
                 not signed-up yet ? {" "}
-                <Link to="/admin_2156/signup" className="text-white underline"  >
+                <Link to="/admin/signup" className="text-lime-400 underline"  >
                     Sign Up
                 </Link>
             </p>
-
+         </div>
         </form>
     );
 

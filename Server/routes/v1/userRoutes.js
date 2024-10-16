@@ -7,12 +7,10 @@ const router = express.Router();
 
 router.post("/signup", userSignup);
 router.post("/login", userLogin);
-router.post("/logout",userAuth, userLogout);
-
+router.post("/logout", userLogout);
 router.get("/profile", userAuth, userProfile);
 router.put("/update", userAuth, updateProfile);
-router.delete("/delete/:userId", userDelete);
-
+router.delete("/delete/:id", userDelete);
 router.get("/userList", userList);
 router.get("/check-user", userAuth, checkUser);
 

@@ -1,15 +1,17 @@
 import express from "express";
 import upload from "../../middlewares/multer.js";
-import adminAuth from "../../middlewares/adminAuth.js";
-import { createMovie, updateMovie, deleteMovie, getMovies, getMovieDetails} from "../../controllers/movieController.js";
+import { createMovie, updateMovie, deleteMovie, getMovies, getMovieDetails, Featured, genreList, search} from "../../controllers/movieController.js";
 
 
 const router = express.Router();
 
+router.get("/featured", Featured);
+router.get("/search", search);
+router.get("/genre", genreList);
 router.get("/movie-list", getMovies);
-router.get("/details/:movieId", getMovieDetails);
+router.get("/details/:id", getMovieDetails);
 router.post("/create", upload.single("image"), createMovie);
 router.put("/update/:movieId", upload.single("image"), updateMovie);
-router.delete("/delete/:movieId", adminAuth, deleteMovie);
+router.delete("/delete/:id", deleteMovie);
 
 export {router as movieRouter };

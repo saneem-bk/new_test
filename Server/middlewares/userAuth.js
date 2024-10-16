@@ -5,12 +5,14 @@ export const userAuth = (req, res, next) => {
         console.log('hitted');
         
         const { token } = req.cookies;
+        
         if (!token) {
             return res.status(401).json({ success: false, message: "user not autherized" });
         }
         const tokenVerified = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
         if (!tokenVerified) {
-            return res.status(401).json({ success: false, message: "user not autherizedF" });
+            return res.status(401).json({ success: false, message: "user not autherized" });
         }
 
         req.user = tokenVerified;

@@ -32,8 +32,7 @@ const movieSchema = new mongoose.Schema(
             type: Number, 
             default: 0 
         },
-        image: String,
-        reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Review' }],
+        image: String
     }, 
     { timestamps: true }
     );

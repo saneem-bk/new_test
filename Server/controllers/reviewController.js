@@ -1,23 +1,20 @@
 import Review from '../models/reviewModel.js'
-import Movie from '../models/movieModel.js'
 
 export const addReview = async (req, res) => {
     try {
         const { movieId, rating, comment } = req.body;
         const userId = req.user.id;
+        console.log(userId)
+        const isReviewExist = await Review.findOne({ movieId, userId });
 
-        
-        const movie = await Movie.findById(movieId);
-        if (!movie) {
-            return res.status(404).json({ message: "Movie not found" });
+        if (isReviewExist) {
+            return res.status(409).json({ success: false, message: "already rated this movie" });
         }
+        const review = new Review({ userId, movieId, rating, comment });
+            
+        await review.save();
 
-       
-        const review = await Review.findOneAndUpdate({ userId, movieId }, { rating, comment }, { new: true, upsert: true });
-
-        
-
-        res.status(201).json(review);
+        res.status(201).json({ succes: true,message: "Review was successful", data:review });
     } catch (error) {
         res.status(500).json({ message: "Internal server error", error });
     }
@@ -25,15 +22,28 @@ export const addReview = async (req, res) => {
 
 export const getMovieReviews = async (req, res) => {
     try {
-        const { movieId } = req.params;
+      const { id } = req.params;
+      const reviews = await Review.find({ movieId: id }).populate("userId", "name").sort({ createdAt: -1 });
+      if (reviews.length === 0) {
+        return res.status(200).json({ message: "No reviews found for this movie" });
+      }
+      return res.status(200).json(reviews);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error", error });
+    }
+  };
 
-        const reviews = await Review.find({ movieId }).populate("userId", "name").sort({ createdAt: -1 });
+
+export const getUserReviews = async (req, res) => {
+    try {
+        const { id } = req.user;
+        const reviews = await Review.find({ userId: id }).populate("movieId", "title").sort({ createdAt: -1 });
 
         if (!reviews.length) {
-            return res.status(404).json({ message: "No reviews found for this movie" });
+            return res.status(404).json({ message: "you haven't made any reviews" });
         }
-
-        res.status(200).json(reviews);
+      console.log("reviews",reviews)
+       return res.status(200).json(reviews);
     } catch (error) {
         res.status(500).json({ message: "Internal server error", error });
     }
@@ -57,19 +67,3 @@ export const deleteReview = async (req, res) => {
     }
 };
 
-export const getAverageRating = async (req, res) => {
-    try {
-        const { movieId } = req.params;
-
-        const reviews = await Review.find({ movieId });
-        if (!reviews.length) {
-            return res.status(404).json({ message: "No reviews found for this movie" });
-        }
-
-        const averageRating = reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length;
-
-        res.status(200).json({ averageRating });
-    } catch (error) {
-        res.status(500).json({ message: "Internal server error", error });
-    }
-};

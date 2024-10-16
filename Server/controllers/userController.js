@@ -1,7 +1,7 @@
 import User from "../models/userModel.js";
 import bcrypt from "bcrypt";
 import { generateToken } from "../utils/Token.js";
-import mongoose from "mongoose";
+
 
 export const userSignup = async (req, res, next) => {
     try {
@@ -9,19 +9,18 @@ export const userSignup = async (req, res, next) => {
         if (!name || !email || !password) {
             return res.status(400).json({ success: false, message: "all fields required" });
         }
-        const isUserExist = await User.findOne({ email });
-
+        const isUserExist = await User.findOne({ email: {$regex: email, $options: 'i'} });
         if (isUserExist) {
             return res.status(400).json({ message: "user already exist" });
         }
 
         const saltRounds = 10;
         const hashedPassword = bcrypt.hashSync(password, saltRounds);
-
-        const newUser = new User({ name, email, password: hashedPassword });
+        const lcEmail = email.toLowerCase();
+        const newUser = new User({ name, email: lcEmail, password: hashedPassword });
         await newUser.save();
 
-        const token = generateToken(newUser.id);
+        const token = generateToken(newUser._id);
 
         res.cookie("token", token);
         res.json({ success: true, message: "user created successfully" });
@@ -38,17 +37,17 @@ export const userLogin = async (req, res, next) => {
             return res.status(400).json({ message: "all fields are required" });
         }
 
-        const userExist = await User.findOne({ email });
+        const userExist = await User.findOne({ email: {$regex: email, $options: 'i'} });
         if (!userExist) {
             return res.status(404).json({ success: false, message: "user does not exist" });
         }
 
         const passwordMatch = bcrypt.compareSync(password, userExist.password);
         if (!passwordMatch) {
-            return res.status(401).json({ message: "user not autherized" });
+            return res.status(401).json({ message: "password does not match" });
         }
 
-        const token = generateToken(userExist.id);
+        const token = generateToken(userExist._id);
 
         res.cookie("token", token);
         res.json({ success: true, message: "user login successfull" });
@@ -70,10 +69,9 @@ export const userLogout = async (req, res, next) => {
 export const userProfile = async (req, res, next) => {
     try {
         const { user } = req;
-        console.log(user, "=user");
 
-        const userData = await User.findOne({ _id: user.id });
-
+        const userData = await User.findOne({ _id: user.id }).select('-password');
+       console.log('user data', userData)
         res.json({ success: true, message: "user data fetched", data: userData });
     } catch (error) {
         console.log(error);
@@ -85,11 +83,12 @@ export const userProfile = async (req, res, next) => {
 export const updateProfile = async (req, res, next) => {
     try {
         const { user } = req;
-        console.log(user, "=user");
+        console.log("user id", user.id);
+        const { name, email } = req.body;
 
         const updatedUser = await User.findByIdAndUpdate(
             { _id: user.id },
-            { email, password },
+            { name, email },
             {
                 new: true
             }
@@ -106,8 +105,9 @@ export const updateProfile = async (req, res, next) => {
 export const checkUser = async (req, res, next) => {
     try {
         const { user } = req;
-        if (!user) {
-            res.status(401).json({ success: false, message: "user not autherized" });
+        const userExist = await User.findById(user.id);
+        if (!userExist) {
+          return res.status(401).json({ success: false, message: "user not autherized" });
         }
 
         res.json({ success: true, message: "user autherized" });
@@ -133,25 +133,19 @@ export const userList = async (req, res, next) => {
 };
 
 
+
 export const userDelete = async (req, res, next) => {
-    try {
-        const DeletedUser = mongoose.model('DeletedUser', {
-            name: String,
-            email: String
-        });
-        
-        id = req.params.id;
-        const user = await User.findById(id);
-        
-        const deletedUser = new
-            DeletedUser(user);
-        await deletedUser.save();
-        await user.remove();
-
-        res.json({ success: true, message: "deleted successfully" });
-
-    } catch (error) {
-        console.log(error);
-        res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" });
-    }
+	try {
+		const id = req.params.id;
+		const user = await User.findById(id);
+		if (!user) {
+			return res.status(404).json({ message: "User not found" });
+		}
+		user.isDeleted = true;
+		await user.save();
+		res.json({ success: true, message: "User deleted successfully" });
+	} catch (error) {
+		console.log(error);
+		res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" });
+	}
 };
